@@ -8,11 +8,7 @@ class Info {
     private $info;
     private $dataBase;
     
-    private $DBName = 'datapaper';
-    private $DBUrl = 'localhost';
-    private $DBPort = 5984;
-    private $DBUser='datacouch';
-    private $DBCouch='Data..Couch';
+
     public function setInfo($info) {
         $this->info = $info;
         

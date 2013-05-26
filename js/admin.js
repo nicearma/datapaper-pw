@@ -1,119 +1,104 @@
 jQuery(document).ready(
         function() {
-            jQuery("#tabs").tabs();
+
+            jQuery(document).on('click', '#dp-save-relation-user-source', function() {
+                dp_save_relation_user_source(this);
+            });
+            
+             jQuery(document).on('click', '#dp-delete-relation-user-source', function() {
+                dp_delete_relation_user_source();
+            });
+            jQuery(document).on('click', '#dp-update-relation-user-source', function() {
+                dp_update_relation_user_source();
+            });
+            jQuery(document).on('click', '#dp-save-sparql', function() {
+                dp_save_source();
+            });
         });
-var i = 0;
-var total = 0;
-function DP_search_sparql() {
-
-    query = 'query=' + escape(jQuery('textarea').val()) + '&output=json';
-    jQuery.ajax({
-        url: jQuery('#url').val(),
-        type: 'get',
-        data: query,
-        dataType: 'json'
-    }).done(function(data) {
-        console.log(data.results.bindings);
-        out1 = "";
-        out2 = "";
-        if (data.results.bindings != null || data.results.bindings.length > 0) {
-            jQuery("#dp_user").append('<input type="button" onclick="DP_insert_all(true);" value="Insert user in wordpress"><br/>');
-            jQuery("#dp_user").append('<progress id="prog" value="0" max="' + data.results.bindings.length + '"></progress>');
-
-            for (result in data.results.bindings) {
-                out1 = "";
-                out2 = "";
-                j = 0;
-                for (key in data.results.bindings[result]) {
-                    if (data.results.bindings[result][key].type == 'literal') {
-                        out1 = '<ul><li>' + data.results.bindings[result][key].value + '</li><input type="hidden" name="value[' + i + '][user]" value="' + data.results.bindings[result][key].value + '" />';
-                    } else {
-                        out2 += '<li>' + data.results.bindings[result][key].value + '</li><input type="hidden" name="value[' + i + '][uri][' + j + ']" value="' + data.results.bindings[result][key].value + '" />';
-                        j++;
-                    }
-                }
-                i++;
-                jQuery("#dp_user").append(out1 + '<ul>' + out2 + '</ul>');
-            }
+function dp_save_source() {
+    var name = 'add_source';
+    var data = {
+        action: name,
+        value: jQuery('#dp-add-source').serializeObject()
+    };
+    var result = DP_ajax_server(data);
+    result.done(function(data) {
+        if (data.succes) {
+            jQuery("#dp-save-sparql").hide();
+            jQuery("#dp-verify-sparql .modal-body").html("<p><b>Saved!!</b></p>");
         }
     });
 
+}
+function dp_show_source() {
 
+    var uri_sparql = jQuery('#uri_sparql').val();
+    var uri_base = jQuery('#uri_base').val();
+    var squery = jQuery('#sparql').val();
+    squery = squery.replace(/uri_base/gi, uri_base);
+    var body = DP_search_sparql2(squery, uri_sparql);
+    body.done(function(data) {
+        if (data.results.bindings.length > 0) {
+            console.log(data.results.bindings[0]);
+            jQuery('#name_uri_base').val(data.results.bindings[0].conferenceName.value);
+            jQuery("#dp-verify-sparql .modal-body").html("<p><b>The name of the conference is:</b></p><h4>" + data.results.bindings[0].conferenceName.value + "</h4>");
+            jQuery("#dp-save-sparql").show();
 
+        } else {
 
+            jQuery("#dp-verify-sparql .modal-body").html("<p><b>Sorry nothing to show, try again</b></p><h4>" + data.results.bindings[0].conferenceName.value + "</h4>");
+        }
+    });
+    open_modal('#dp-verify-sparql');
+    jQuery("#dp-save-sparql").hide();
+ 
 }
 
-function DP_insert_all(all) {
-    var algo = jQuery('#dp_user').serializeObject();
 
 
+function dp_save_relation_user_source(obj) {
 
-    for (var key in algo.value) {
-        DP_insert_user(algo.value[key]);
-    }
-
-
-}
-
-function DP_insert_user(name) {
-
+    var name = 'add_relation_user_source';
     var data = {
-        action: 'add_user',
-        value: name
+        action: name,
+        value: jQuery('#dp-add-relation-user-source').serializeObject()
     };
-    jQuery.ajax({
-        url: "admin-ajax.php",
-        type: 'post',
-        data: data,
-        dataType: 'json'
-    }).done(function(data) {
-        jQuery('#prog').attr('value', ++total);
+
+    var reponse = DP_ajax_server(data);
+    reponse.done(function(data) {
+       if(data.succes){
+            document.location.reload(true);
+        }
 
     });
-
 }
 
-function DP_uri_user() {
 
+
+
+function dp_delete_relation_user_source() {
+    var name='delete_relation_user_source';
     var data = {
-        action: 'add_uri',
-        value: jQuery("#dp-uri").serializeObject()
+        action: name,
+        value: jQuery('#dp-delete-relation-user-source-fom').serializeObject()
     };
-    jQuery.ajax({
-        url: "admin-ajax.php",
-        type: 'post',
-        data: data,
-        dataType: 'json'
-    }).done(function(data) {
-        jQuery('#prog').attr('value', ++total);
-
+    var result = DP_ajax_server(data);
+    result.done(function(data) {
+        if(data.succes){
+              document.location.reload(true);
+        }
+      
     });
-
 }
-function DP_search_user() {
-
+function dp_update_relation_user_source() {
     var data = {
-        action: 'search_user',
-        value: jQuery('#dp-user').val()
+        action: name,
+        value: jQuery('#dp-update-relation-user-source-form').serializeObject()
     };
-    jQuery.ajax({
-        url: "admin-ajax.php",
-        type: 'post',
-        data: data,
-        dataType: 'html'
-    }).done(function(data) {
-        
-        jQuery('#dp-search-user').val('');
-        jQuery('#dp-search-user').append(data);
-        DP_add_html_uri();
+    var result = DP_ajax_server(data);
+    result.done(function(data) {
+        if(data.succes){
+            document.location.reload(true);
+        }
     });
-    
 }
-
-function DP_add_html_uri(){
-     jQuery('#dp-add-uri').show();
-     jQuery('#dp-add-uri').append('<br/>URI<input type="text" name="uri[]"/>');    
-
-}
-
-
