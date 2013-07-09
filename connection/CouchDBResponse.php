@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * All the logic for get the response between the CouchDB and the Plugin PHP
+ */
+
 class CouchDBResponse {
 
     private $raw_response = '';

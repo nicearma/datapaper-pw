@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Logic for the connection of couchDB
+ */
+
 class CouchDB {
 
     private $username;

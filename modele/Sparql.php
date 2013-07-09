@@ -1,11 +1,5 @@
 <?php
 
-/*
-
-$data=sparqlQuery($query, "http://localhost:8890/sparql/");
-
-print "Retrieved data:\n" . json_encode($data);
-*/
 
 class Sparql {
 
@@ -21,8 +15,6 @@ class Sparql {
         }
 
         $sparqlURL = $baseURL . $querypart;
-      //  print $sparqlURL;
-
         return json_decode(file_get_contents($sparqlURL));
     }
 

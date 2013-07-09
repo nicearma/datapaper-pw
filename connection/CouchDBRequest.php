@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * All the request possible between CouchDB and the Plugin PHP
+ */
+
 class CouchDBRequest {
 
     static $VALID_HTTP_METHODS = array('DELETE', 'GET', 'POST', 'PUT');

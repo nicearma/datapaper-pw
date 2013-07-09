@@ -4,10 +4,14 @@
   Plugin Name: Datapaper
   Plugin URI: http://dataconf.liris.cnrs.fr
   Description: This is a plugin for the dataconf.
-  Version: 0.1
+  Version: 0.5
   Author: ARMANDO Nicolas
   Author URI: http://www.nicearma.com
   License: A "Slug" license name e.g. GPL2
+ */
+
+/*
+ *All the script necessary for the plugin
  */
 
 wp_register_script('dp-plugin-script', plugins_url('/js/plugin.js', __FILE__), array('jquery', 'jquery-ui-dialog'));
@@ -22,16 +26,33 @@ wp_register_style('dp-bootstratp-css', plugins_url('css/bootstrap.min.css', __FI
 
 add_action('admin_init', 'dp_help_files');
 add_action('admin_menu', 'dp_menu');
-/*
-function dp_menu_bar(){
-    global $wp_admin_bar;
 
-    $wp_admin_bar->add_menu( array(
-        'id'   => $id,
-        'meta' => array(),
-        'title' => $name,
-        'href' => $href ) );
-}*/
+add_filter('login_redirect', 'dp_init', 10, 3);
+
+/**
+ * Add the menu in the left bar of the wordpress admin bar
+ * All the 3 param automatic came from the wordpress hook
+ * @param type $redirect_to
+ * @param type $request
+ * @param type $user
+ * @return string
+ */
+
+function dp_init($redirect_to,$request,$user){
+    if(isset($user->roles)&&  is_array($user->roles)){
+        
+        if(in_array("administrator", $user->roles)){
+            $redirect_to=  get_settings('siteurl').'/wp-admin/admin.php?page=dp-admin';
+        }else if(in_array("editor", $user->roles)){
+            $redirect_to=  get_settings('siteurl').'/wp-admin/admin.php?page=dp-chair';
+        }else if(in_array("subscriber", $user->roles)){
+            $redirect_to=  get_settings('siteurl').'/wp-admin/admin.php?page=dp-user';
+        }
+    }else{
+        
+    }
+    return $redirect_to;
+}
 
 function dp_menu(){
     add_menu_page('Datapaper plugin', 'Datapaper', 'activate_plugins', 'dp-menu-page','dp_home');
@@ -39,6 +60,9 @@ function dp_menu(){
     add_submenu_page('dp-menu-page', 'Datapaper chair','Chair', 'edit_posts', 'dp-chair','datapaper_creator');
     add_submenu_page('dp-menu-page', 'Datapaper user','User', 'read', 'dp-user','datapaper_user');
 }
+/*
+ * Add files php who can work in different part of the code
+ */
 
 function dp_help_files() {
     
@@ -48,6 +72,10 @@ function dp_help_files() {
     wp_enqueue_style('dp-bootstratp-css');
 
 }
+
+/*
+ * Zone fot add all the file for work with the plugin
+ */
 
 include_once 'modele/DPData.php';
 include_once 'controler/Info.php';
@@ -69,12 +97,19 @@ include_once 'html/creator.php';
 include_once 'html/user.php';
 include_once 'html/home.php';
 include_once 'html/form_registration.php';
+
+//for add in the database the news tables *see note int the file DP_SQL
 register_activation_hook(__FILE__, 'DP_SQL_install');
 
-function get_sparql($id_user,$sparql){
+//Use in different part of the code for get the code SPARQL 
+function get_sparql($id,$sparql){
+        //get from the database the end point and the uri for make the different communication between 
         $result= DP_SQL::DP_get_source($id);
-        $sparql = str_replace(Configuration::$url, $result[0]->uri_base, $sparql);
+        //replace the uri generique from the $spaql for the uri base
+        $sparql = str_replace(Configuration::$url, '<'.$result[0]->uri_base.'>', $sparql);
+        
         $uri_sparql = $result[0]->uri_sparql;
+        //get the result from the end point and the query sparql
         return Sparql::sparqlQuery($sparql, $uri_sparql);
  
 }

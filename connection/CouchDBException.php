@@ -1,10 +1,8 @@
 <?php
 
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * For the exception of the communication between the plugin PHP and the Database
  */
-
 
 class CouchDBException extends Exception{
     

@@ -1,45 +1,61 @@
 <?php
+/*
+ * Automatic way to put the information find with the email of the user
+ */
 
 class Auto {
 
     private $exist_mail = false;
-    private $mail;
+    private $user_email;
     private $head;
     private $results;
     private $id_source;
     private $id_user;
-
-    function __construct($id_source, $mail) {
+    /**
+     * 
+     * @param type $id_source
+     * @param type $user_email
+     */
+    function __construct($id_source, $user_email) {
         $this->id_source = $id_source;
-        $this->mail=$mail;
+        $this->user_email = $user_email;
     }
-    
+    /**
+     * get the result of the request made with the end point sparql and the sparql with the email of the user 
+     * @return type
+     */
     public function get_results() {
         return $this->results;
     }
-
-    
-    public function set_mail($mail) {
-        $this->mail = $mail;
+    /**
+     * IMPORTANT set the email of the user we want to search in the end point
+     * @param type $user_email
+     */
+    public function set_mail($user_email) {
+        $this->user_email = $user_email;
     }
 
     public function set_id_user($id_user) {
         $this->id_user = $id_user;
     }
 
+ /**
+  * With the email set in the object we search if exist in the end point and set/return the true or false 
+  * if the email is finded in the end point
+  * @return type
+  */
     public function verify_mail() {
 
-        $result = DP_SQL::DP_get_source($this->id_source);
+        //get the sparql with the email
+        $sparql = Configuration::validate_user($this->user_email);
 
-        $sparql = Configuration::validate_user($this->mail);
-        
-        $sparql = str_replace(Configuration::$url, $result[0]->uri_base, $sparql);
-        
-        $uri_sparql = $result[0]->uri_sparql;
-
-        $result = Sparql::sparqlQuery($sparql, $uri_sparql);
+       //get the result for the end point and the query for validate the email
+        $result = get_sparql($this->id_source, $sparql);
+        //get the headers for know all the different variable
         $this->head = $result->head->vars;
+        //get the list of result, is a list(array)
         $this->results = $result->results->bindings;
+        //if the cantity of result is more than 0 the email exist in the end point, so the result is true
         if (count($this->results) > 0) {
             $this->exist_mail = true;
         }
@@ -47,55 +63,73 @@ class Auto {
     }
 
     public function get_entities_author() {
-       
-        $sparql = Configuration::get_sparql_entities_author($this->mail);
-        $result= get_sparql($this->id_source,$sparql, $result);
-        
 
+        //get the query sparql for try to find all the entities 
+        $sparql = Configuration::get_sparql_entities_author($this->user_email);
+        //get the all entities from the end point with the query for get the author
+        $result = get_sparql($this->id_source, $sparql);
+         //get the headers for know all the different variable
         $this->head = $result->head->vars;
+        //get the list of result, is a list(array)
         $this->results = $result->results->bindings;
-       if(!(count($result->results->bindings)>0)){
-           return  new WP_Error('datapaper', __("Dont find any entity author"));
-       }
+        //verify if the result have or not the the entitys, if dont exist any, we send un error to wordpress
+        if (!(count($result->results->bindings) > 0)) {
+            return new WP_Error('datapaper', __("Dont find any entity author"));
+        }
     }
 
     public function get_entities_publication() {
-
-        $sparql = Configuration::get_sparql_entities_publication($this->mail);
-        $result= get_sparql($this->id_source,$sparql, $result);
-
-
+        //get the query sparql for find all the entities publication 
+        $sparql = Configuration::get_sparql_entities_publication($this->user_email);
+        
+        //get the all entities from the end point with the query for get the author
+        $result = get_sparql($this->id_source, $sparql);
+         //get the headers for know all the different variable
         $this->head = $result->head->vars;
-
+        //get the list of result, is a list(array)
         $this->results = $result->results->bindings;
-        if(!(count($result->results->bindings)>0)){
-           return  new WP_Error('datapaper', __("Dont find any entity publication"));
-       }
+        //verify if the result have or not the the entitys, if dont exist any, we send un error to wordpress
+        if (!(count($result->results->bindings) > 0)) {
+            return new WP_Error('datapaper', __("Dont find any entity publication"));
+        }
     }
+    /**
+     * Insert all the entities find in the function get_entities_*
+     * @param type $id_user
+     */
 
     public function insert_entities($id_user = null) {
+        
         if (!empty($id_user)) {
             $this->id_user = $id_user;
         }
-       
+        //For all the result insert one by one the uri with the relation of the user
         foreach ($this->results as $value) {
-            
+
             $data = ['name' => $value->name->value, 'uri' => $value->uri->value, 'id_user' => $this->id_user];
             DP_SQL::DP_insert_uri_user($data);
         }
     }
 
-    /*
-      public function insert_entities_publication() {
-      foreach ($this->results as $key => $value) {
-
-      foreach ($this->head as $key2 => $value2) {
-
-      print 'value of type '. $value->$value2->type.' value of value '. $value->$value2->value.'<br>';
-      }
-      }
-      }
+    /**
+     * Insert in CouchDB if the image exist
+     * @param type $id_user
      */
+    public function insert_gravatar($email,$userLogin=null) {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $grav_url = "http://www.gravatar.com/avatar/" . md5(strtolower(trim($email)));
+            $file_headers = @get_headers($grav_url);
+            if (!($file_headers[0] == 'HTTP/1.1 404 Not Found')) {
+                $data = ['public' => ['0' => ['description'=>'', 'url' => $grav_url,'type'=>'']]];
+                $info=new Info();
+                foreach ($this->results as $value) {
+                     $info->setInfo(array_merge(['_id'=>$value],$data));
+                     $info->addPrivate($userLogin);
+                }
+            }
+        }
+    }
+
 }
 
 ?>

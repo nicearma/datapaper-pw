@@ -1,6 +1,8 @@
 jQuery(document).ready(
         function() {
-
+    jQuery(document).on('click','#dp-show-source',function(){
+        dp_show_source();
+    });
             jQuery(document).on('click', '#dp-save-relation-user-source', function() {
                 dp_save_relation_user_source(this);
             });
@@ -53,8 +55,6 @@ function dp_show_source() {
     jQuery("#dp-save-sparql").hide();
  
 }
-
-
 
 function dp_save_relation_user_source(obj) {
 

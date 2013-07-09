@@ -1,15 +1,15 @@
 <?php
-//if (is_author()) {
-
+/*
+ * All the information related with the creator/chair, is the html view
+ */
 add_action('admin_init', 'datapaper_creator_menu');
 add_action('wp_ajax_add_user', 'add_user_callback');
-//add_action('wp_ajax_search_user', 'search_user_callback');
+
 add_action('wp_ajax_add_uri_user', 'add_uri_user_callback');
 
 add_action('wp_ajax_search_entities', 'search_entities_callback');
 add_action('wp_ajax_add_uri_from_post', 'add_uri_from_post_callback');
 
-//}
 
 function datapaper_creator_menu() {
 
@@ -63,6 +63,10 @@ function datapaper_creator() {
                 </div>
             </div>
 
+             <?php
+             insert_modal(); 
+             ?>
+           
             <div id="dp-creation-modal-good" class="modal hide fade">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -112,6 +116,9 @@ function datapaper_creator() {
                              <option value="publication">
                                 Publication
                             </option>
+                            <option value="event">
+                                Event
+                            </option>
                         </select>
                     </div>
                     <div hidden id="dp-list-entities">
@@ -132,29 +139,19 @@ function datapaper_creator() {
 
     function add_user_callback() {
         $out=['succes'=>false];
-        $array = $_POST['value'];
-        foreach ($array as $value) {
-           
-            if (empty($value['user_maill'])) {
-                $mail = $value['user_mail'];
-                $user_id = DP_SQL::DP_add_user($value['name'], $mail);
+        $value = $_POST['value'];
+
+            if (!empty($value['user_mail'])) {
+                $user_email = $value['user_mail'];
+                $user_id = DP_SQL::DP_add_user($value['name'], $user_email);
+      
                 if(is_wp_error($user_id)){
-                   $out['message'][]=$user_id->get_error_message();
+                   $out['msg'][]=$user_id->get_error_message();
                 }else {
-                    $out['message'][]='User successfully added';
-                    if(!empty($value['id_source'])){
-                    $out['message'][]="User create";
-                    $id_source=$value['id_source'];
-                   
-                    dp_insertion_entities($id_source, $mail,$user_id);
-                    $out['message'][]="All fine";
                     $out['succes']=true;
-                }else{
-                     $out['message'][]='Sorry but we cant not add entities without the id of source';
+                    $out['msg'][]='User successfully added';
+
                 }
-                }
-                
-            }   
         }
         echo json_encode($out);
         die();
@@ -170,8 +167,11 @@ function datapaper_creator() {
           $sparql=  Configuration::get_sparql_entities_author();
         }else if($type="publication"){
            $sparql= Configuration::get_sparql_entities_publication();
+        }else if($type="event"){
+           $sparql= Configuration::get_sparql_entities_event();
         }
-        $result=get_sparql($id_source,$sparql, $result);
+
+        $result=get_sparql($id_source,$sparql);
        $out= ['succes'=>true,'result' => $result];
         }
        echo json_encode($out);
@@ -186,7 +186,8 @@ function datapaper_creator() {
         $name=$value['name'];    
         $out=add_uri_user($uri, $id_user,$name);
         }else{
-            $out=['succes'=>false,'msg'=>'Problem with the form'];
+            $out['succes']=false;
+            $out['msg'][]='Problem with the form';
         }
         echo json_encode($out);
         die();
@@ -196,6 +197,5 @@ function datapaper_creator() {
     function add_uri_user($uri, $id,$name) {
             $array = ['id_user' => $id, 'uri' => $uri,'name'=>$name];
             return DP_SQL::DP_insert_uri_user($array);
-
     }
     ?>

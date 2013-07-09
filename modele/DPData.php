@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Description of Public
+ * Not used, is for validate all the data in automatic way
  *
  * @author Nicolas Armando
  */

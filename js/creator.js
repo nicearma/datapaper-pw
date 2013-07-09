@@ -124,7 +124,7 @@ if (atpos<1 || dotpos<atpos+2 || dotpos+2>=mail.length)
     console.log(value_select_sha1);
     if(mail_encryp!=value_select_sha1){
         console.log('is not the same');
-         open_modal('#dp-creation-modal');
+        open_modal('#dp-creation-modal');
     }else{
         console.log('trying to add');
         add_user();
@@ -148,18 +148,14 @@ function add_user(){
     console.log('name :'+name);
       var data = {
         action: 'add_user',
-        value: [{user_mail:mail,id_source:id_source,name:name}]
+        value: {user_mail:mail,id_source:id_source,name:name}
     };
     console.log('data');
     console.log(data);
     
     var user=DP_ajax_server(data);
     user.done(function(data){
-        if(data.succes){
-            alert(data.message);
-        }else{
-            alert('Sorry, We cant do the action');
-        }
+        modal_status(data);
     });
 }
    
@@ -189,7 +185,10 @@ function search_entities(){
              }
           
          }else{
-             alert('nothing to show');
+              var data={succes:false,msg:[{0:'Problem with request sparql'}]};
+              modal_status(data); 
+              
+            
          }
      });
 }
@@ -197,7 +196,7 @@ function search_entities(){
 
 function add_uri_user(){
     
-    var uri=jQuery('#dp-list-entities .dp-list-entity :selected').attr('data-uri');
+    var uri=unescape(jQuery('#dp-list-entities .dp-list-entity :selected').attr('data-uri'));
     var name=jQuery('#dp-list-entities .dp-list-entity').val();
     console.log(uri);
     console.log('data source');
@@ -210,10 +209,7 @@ function add_uri_user(){
      var entities=DP_ajax_server(data);
      entities.done(function(data){
          if(data.succes){
-             console.log(data.result);
-             alert(data.msg);
-         }else{
-             alert('Something is wrong');
+           modal_status(data); 
          }
      });
 }

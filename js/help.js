@@ -152,6 +152,25 @@ function DP_ajax_server(data){
         .appendTo( ul );
     };
   }
+  
+  function modal_status(data){
+     if(data.succes){
+                jQuery('#dp-generic h3').html('All is fine');
+    // console.log('succes');
+      }else{
+          jQuery('#dp-generic h3').html('Warning');
+   //console.log('problem');
+      }
+      jQuery('#dp-generic.modal-body').html('');
+
+      for (key in data.msg){
+       //   console.log(data.msg[key]);
+          jQuery('#dp-generic .modal-body').append('<li>'+data.msg[key]+'</li>');
+      }
+      open_modal('#dp-generic');
+  }
+  
+  
   /*
   if ((jQuery(this).attr('data-type') == 'needed') && (!jQuery(this).is(':checked'))) {
                     console.log('here2');

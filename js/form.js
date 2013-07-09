@@ -1,9 +1,10 @@
 jQuery(document).ready(
         function() {
-           
+        //   jQuery('#wp-submit').hide();
 jQuery(document).on('click',function(){
     check_mail();
 });
+jQuery('input').css('height','30px');
 
 });
         

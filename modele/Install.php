@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * All the logic for install the plugin in the database MySQL
+ * Note: not all the time this install work, if you install the plugin but in the database dont see the table *_dp_* please you have to make this tables
+ */
 global $datapaper_db_version;
 $datapaper_db_version = "1.0";
 
@@ -45,40 +48,51 @@ function DP_SQL_install() {
 }
 
 class Install {
-  
+  /**
+   * Table for the relationship of user-uri (entities for the user)
+   * @global type $wpdb
+   * @return type
+   */
 public static function getPrefix1(){
    global $wpdb;
-  // global $datapaper_db_version;
 
    return $wpdb->prefix . "dp_user_uri";
 }
- 
+ /**
+  * Table for the stoke of the source end point
+  * @global type $wpdb
+  * @return type
+  */
 public static function getPrefix2(){
    global $wpdb;
-  // global $datapaper_db_version;
-
    return $wpdb->prefix . "dp_source";
 }
-
+/**
+ * Table for the relationship of source-user (the end point)
+ * @global type $wpdb
+ * @return type
+ */
 public static function getPrefix3(){
    global $wpdb;
-  // global $datapaper_db_version;
-
    return $wpdb->prefix . "dp_source_user";
 }
-    
+/**
+ * Only for help and find the native table user of wordpress
+ * @global type $wpdb
+ * @return type
+ */    
 
 public static function getPrefix4(){
    global $wpdb;
-  // global $datapaper_db_version;
-
    return $wpdb->prefix . "users";
 }
-
+/**
+ * Not used, but for make all the configuration in MySQL
+ * @global type $wpdb
+ * @return type
+ */
 public static function getPrefix5(){
    global $wpdb;
-  // global $datapaper_db_version;
-
    return $wpdb->prefix . "dp_configuration";
 }
 
